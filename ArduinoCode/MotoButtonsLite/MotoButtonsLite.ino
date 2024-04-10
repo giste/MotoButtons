@@ -117,8 +117,8 @@ uint8_t BUTTON_RIGHT   = 3;
 uint8_t BUTTON_CENTER  = 1;
 uint8_t BUTTON_A       = 5;
 uint8_t BUTTON_B       = 6;
-uint8_t LED_BUTTON_A   = 7;
-uint8_t LED_BUTTON_B   = 8;
+//uint8_t LED_BUTTON_A   = 7;
+uint8_t LED_BUTTON_B   = 7;
 
 #define DEBOUNCE_TIME_MS 50
 
@@ -210,7 +210,7 @@ bool setButtonMapping(uint8_t buttMap) {
 		BUTTON_CENTER  = 1;
 		BUTTON_A       = 6;
 		BUTTON_B       = 5;
-		LED_BUTTON_A   = 8;
+		//LED_BUTTON_A   = 8;
 		LED_BUTTON_B   = 7;
 		break;
 	case 1: // two button on left
@@ -221,7 +221,7 @@ bool setButtonMapping(uint8_t buttMap) {
 		BUTTON_CENTER  = 1;
 		BUTTON_A       = 6;
 		BUTTON_B       = 5;
-		LED_BUTTON_A   = 8;
+		//LED_BUTTON_A   = 8;
 		LED_BUTTON_B   = 7;
 		break;
 	case 2: // two button on bottom
@@ -232,8 +232,8 @@ bool setButtonMapping(uint8_t buttMap) {
 		BUTTON_CENTER  = 1;
 		BUTTON_A       = 5;
 		BUTTON_B       = 6;
-		LED_BUTTON_A   = 7;
-		LED_BUTTON_B   = 8;
+		//LED_BUTTON_A   = 7;
+		LED_BUTTON_B   = 7;
 		break;
 	case 3: // two buttons toward right
 		BUTTON_UP      = 3;
@@ -243,7 +243,7 @@ bool setButtonMapping(uint8_t buttMap) {
 		BUTTON_CENTER  = 1;
 		BUTTON_A       = 6;
 		BUTTON_B       = 5;
-		LED_BUTTON_A   = 8;
+		//LED_BUTTON_A   = 8;
 		LED_BUTTON_B   = 7;
 		break;
 	default:
@@ -310,12 +310,12 @@ void indicateMode(uint8_t mode, bool led) {
     // signal the new mode number
     for (unsigned int i = 0; i < 2*((int)mode+1); i++) {
 		if (led)
-			digitalToggle(LED_BUTTON_A);
+			digitalToggle(LED_BUTTON_B);
 		else
 			digitalToggle(LED_BUTTON_B);
       delay(500);
     }
-    digitalWrite(LED_BUTTON_A, LOW);
+    //digitalWrite(LED_BUTTON_A, LOW);
     digitalWrite(LED_BUTTON_B, LOW);
 }
 
@@ -342,8 +342,8 @@ void updateButtons() {
       stateChanged |= true;
 
       // indicate virtual button
-      digitalToggle(LED_BUTTON_A);
-      digitalWrite(LED_BUTTON_A, HIGH);
+      digitalToggle(LED_BUTTON_B);
+      digitalWrite(LED_BUTTON_B, HIGH);
     }
     button_virtual_state = true;
   }
@@ -354,8 +354,8 @@ void updateButtons() {
 	button_virtual_timeout = true;
 	button_virtual_time = millis();
     if (DEBUG) Serial.println("Virtual button deactivated, timeout enabled.");
-    digitalToggle(LED_BUTTON_A);
-    digitalWrite(LED_BUTTON_A, LOW);
+    digitalToggle(LED_BUTTON_B);
+    digitalWrite(LED_BUTTON_B, LOW);
     stateChanged |= true;
   }
   
@@ -407,11 +407,11 @@ void updateButtons() {
 
 	  // Flash the LEDs indicating a change of mode occured
     for (unsigned int i = 0; i < 30; i++) {
-      digitalToggle(LED_BUTTON_A);
+      //digitalToggle(LED_BUTTON_A);
       digitalToggle(LED_BUTTON_B);
       delay(100);
     }
-    digitalWrite(LED_BUTTON_A, LOW);
+    //digitalWrite(LED_BUTTON_A, LOW);
     digitalWrite(LED_BUTTON_B, LOW);
     delay(1000);
     indicateMode((uint8_t)currentMode, true);
@@ -450,11 +450,13 @@ void mapButtonsToKeyReport() {
 			  ++i;
 			}
 			if (button_A_state & button_A_flipped && !button_B_state) {
+        if (DEBUG) Serial.println("DMD key A");
 			  button_A_flipped = false;
 			  keyReport[i] = DMD_KEY_A;
 			  ++i;
 			}
 			if (button_B_state && button_B_flipped && !button_A_state && (i < N_KEY_REPORT)) {
+        if (DEBUG) Serial.println("DMD key B");
 			  button_B_flipped = false;
 			  keyReport[i] = DMD_KEY_B;
 			  ++i;
@@ -630,10 +632,10 @@ void setupDigitalIO() {
   pinMode(BUTTON_A,       INPUT_PULLDOWN);
   pinMode(BUTTON_B,       INPUT_PULLDOWN);
 
-  pinMode(LED_BUTTON_A,   OUTPUT);
+  //pinMode(LED_BUTTON_A,   OUTPUT);
   pinMode(LED_BUTTON_B,   OUTPUT);
 
-  digitalWrite(LED_BUTTON_A, LOW);
+  //digitalWrite(LED_BUTTON_A, LOW);
   digitalWrite(LED_BUTTON_B, LOW);
 }
 
@@ -768,7 +770,7 @@ void setup()
 
   if (DEBUG)
     Serial.println("Setup complete.");
-  digitalWrite(LED_BUTTON_A, HIGH);
+  //digitalWrite(LED_BUTTON_A, HIGH);
   digitalWrite(LED_BUTTON_B, HIGH);
 
   // Initialize Internal File System
@@ -803,7 +805,7 @@ void setup()
   if (!success || buttonMap >= 0)
     writeSettings();
 
-  digitalWrite(LED_BUTTON_A, LOW);
+  //digitalWrite(LED_BUTTON_A, LOW);
   digitalWrite(LED_BUTTON_B, LOW);
   indicateMode((uint8_t)currentMode, true);
   delay(250);
@@ -844,12 +846,12 @@ void loop()
   if (!BLE_connected && (Bluefruit.connected() > 0)) {
     if (DEBUG)
       Serial.println("BLE connected to host.");
-    digitalWrite(LED_BUTTON_A, LOW);
+    //digitalWrite(LED_BUTTON_A, LOW);
     digitalWrite(LED_BUTTON_B, LOW);
     BLE_connected = true;
   }
   else if (Bluefruit.connected() == 0) {
-    digitalToggle(LED_BUTTON_A);
+    //digitalToggle(LED_BUTTON_A);
     digitalToggle(LED_BUTTON_B);
     delay(200);
     BLE_connected = false;
@@ -864,7 +866,15 @@ void loop()
       forceKeyReport = false;
       mapButtonsToKeyReport();
       blehid.keyboardReport(0, keyReport);
-      if (DEBUG) Serial.println("Key report sent.");
+      //if (DEBUG) Serial.println("Key report sent.");
+      if (DEBUG) {
+        Serial.print("Key report sent:");
+        for(int i = 0; i < N_KEY_REPORT; i++) {
+          Serial.print(" ");
+          Serial.print(keyReport[i]);
+        }
+        Serial.println("");
+      }
 	  }
 	  
 	  if (currentMode == mouse)
